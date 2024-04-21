@@ -1,23 +1,32 @@
-name: test project
-on: push
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
 jobs:
-  test:
+  build-and-test:
     runs-on: ubuntu-latest
     steps:
-      - name: Get code
+      - name: Checkout code
         uses: actions/checkout@v3
-      - name: Install deps
+      - name: Install dependencies
         run: npm ci
       - name: Run tests
         run: npm test
+
   deploy:
+    needs: build-and-test
     runs-on: ubuntu-latest
+    environment:
+      name: staging
+      url: ${{ steps.deploy.outputs.url }}
     steps:
-      - name: Get code
+      - name: Checkout code
         uses: actions/checkout@v3
-      - name: Install deps
-        run: npm ci
-      - name: Build project
-        run: npm run build
-      - name: printer
-        run: echo "done da job"
+      - name: Deploy to staging
+        id: deploy
+        run: echo "Deploying to staging server" # Replace with your actual deployment script
+      - name: Set deployment URL
+        run: echo "::set-output name=url::http://example-staging.com" # Replace with your actual staging URL
